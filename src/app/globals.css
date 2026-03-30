@@ -1,26 +1,119 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #030712;
+  --foreground: #f9fafb;
+  --panel-bg: #111827;
+  --panel-border: rgba(255,255,255,0.07);
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --input-bg: #1f2937;
+  --input-border: #374151;
+  --hover-bg: rgba(255,255,255,0.05);
+  --tile-brightness: brightness(0.85) saturate(1.2);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html.light {
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+  --panel-bg: #ffffff;
+  --panel-border: rgba(0,0,0,0.08);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --input-bg: #f8fafc;
+  --input-border: #cbd5e1;
+  --hover-bg: rgba(0,0,0,0.04);
+  --tile-brightness: brightness(1) saturate(1);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+}
+
+html, body, #__next {
+  height: 100%;
+}
+
+/* Leaflet tile brightness */
+.leaflet-tile-pane {
+  filter: var(--tile-brightness);
+}
+
+/* ── Panele (bg-gray-900, bg-gray-950 itp.) ─────────────────────────────── */
+html.light .bg-gray-950,
+html.light .bg-gray-900 {
+  background-color: var(--panel-bg) !important;
+}
+html.light .bg-gray-800 {
+  background-color: #f1f5f9 !important;
+}
+html.light .bg-gray-800\/60,
+html.light .bg-gray-800\/50 {
+  background-color: rgba(241,245,249,0.8) !important;
+}
+html.light .bg-gray-900\/95 {
+  background-color: rgba(255,255,255,0.95) !important;
+}
+
+/* ── Obramowania ─────────────────────────────────────────────────────────── */
+html.light .border-gray-700\/50,
+html.light .border-gray-700 {
+  border-color: var(--panel-border) !important;
+}
+html.light .border-white\/5 {
+  border-color: rgba(0,0,0,0.06) !important;
+}
+
+/* ── Tekst ───────────────────────────────────────────────────────────────── */
+html.light .text-white {
+  color: var(--text-primary) !important;
+}
+html.light .text-gray-400 {
+  color: var(--text-secondary) !important;
+}
+html.light .text-gray-500,
+html.light .text-gray-600 {
+  color: var(--text-muted) !important;
+}
+html.light .text-gray-300 {
+  color: #334155 !important;
+}
+
+/* ── Inputy ──────────────────────────────────────────────────────────────── */
+html.light input[type="email"],
+html.light input[type="password"],
+html.light input[type="text"] {
+  background-color: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--text-primary) !important;
+}
+html.light input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* ── Hover stany ─────────────────────────────────────────────────────────── */
+html.light .hover\:bg-gray-800\/50:hover,
+html.light .hover\:bg-gray-700\/60:hover,
+html.light .hover\:bg-gray-700:hover {
+  background-color: rgba(0,0,0,0.06) !important;
+}
+
+/* ── Tooltip Leaflet ─────────────────────────────────────────────────────── */
+html.light .day-tooltip {
+  background: #fff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* ── Animacja dropdownów ─────────────────────────────────────────────────── */
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.dropdown-panel {
+  animation: dropdown-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
