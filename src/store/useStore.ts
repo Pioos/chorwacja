@@ -2,6 +2,11 @@ import { create } from 'zustand'
 import { ParsedRoute } from '@/lib/gpxParser'
 import { Photo } from '@/lib/supabase'
 
+function filterByParticipant(routes: ParsedRoute[], participant: string | null): ParsedRoute[] {
+  if (!participant) return routes
+  return routes.filter((r) => r.participant === participant)
+}
+
 export function mergeRoutes(routes: ParsedRoute[]): ParsedRoute | null {
   if (routes.length === 0) return null
   if (routes.length === 1) return routes[0]
@@ -47,25 +52,22 @@ export const useStore = create<AppState>((set) => ({
 
   addRoute: (newRoute) => set((s) => {
     const routes = [...s.routes, newRoute]
-    const filtered = s.activeParticipant
-      ? routes.filter((r) => r.participant === s.activeParticipant)
-      : routes
-    return { routes, route: mergeRoutes(filtered), activeDayKey: null }
+    return { routes, route: mergeRoutes(filterByParticipant(routes, s.activeParticipant)), activeDayKey: null }
   }),
   removeRouteById: (id) => set((s) => {
     const routes = s.routes.filter((r) => r.routeId !== id)
-    const filtered = s.activeParticipant
-      ? routes.filter((r) => r.participant === s.activeParticipant)
-      : routes
-    return { routes, route: mergeRoutes(filtered), activeDayKey: null }
+    return { routes, route: mergeRoutes(filterByParticipant(routes, s.activeParticipant)), activeDayKey: null }
   }),
   setActiveDayKey: (key) => set({ activeDayKey: key }),
-  setActiveParticipant: (p) => set((s) => {
-    const filtered = p ? s.routes.filter((r) => r.participant === p) : s.routes
-    return { activeParticipant: p, route: mergeRoutes(filtered), activeDayKey: null }
-  }),
+  setActiveParticipant: (p) => set((s) => ({
+    activeParticipant: p,
+    route: mergeRoutes(filterByParticipant(s.routes, p)),
+    activeDayKey: null,
+  })),
   setPhotos: (photos) => set({ photos }),
-  addPhoto: (photo) => set((s) => ({ photos: [...s.photos, photo] })),
+  addPhoto: (photo) => set((s) => (
+    s.photos.some((p) => p.id === photo.id) ? s : { photos: [...s.photos, photo] }
+  )),
   removePhoto: (id) => set((s) => ({ photos: s.photos.filter((p) => p.id !== id) })),
   setSelectedPhoto: (photo) => set({ selectedPhoto: photo }),
   setUploading: (uploading) => set({ uploading }),

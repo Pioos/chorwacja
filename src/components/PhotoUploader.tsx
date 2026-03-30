@@ -10,7 +10,7 @@ import { useStore } from '@/store/useStore'
 export default function PhotoUploader() {
   const PARTICIPANTS = ['Bajera', 'Wojtan', 'Miro', 'David', 'Darek', 'Ośród']
 
-  const { route, addPhoto, uploading, setUploading } = useStore()
+  const { route, uploading, setUploading } = useStore()
   const [author, setAuthor] = useState(() => localStorage.getItem('lastAuthor') ?? '')
   const [queue, setQueue] = useState<File[]>([])
   const [progress, setProgress] = useState<string | null>(null)
@@ -55,6 +55,10 @@ export default function PhotoUploader() {
       setError('Wybierz zdjęcia')
       return
     }
+    if (!route) {
+      setError('Najpierw załaduj trasę GPX – bez niej zdjęcia nie zostaną przypięte do mapy')
+      return
+    }
 
     setUploading(true)
     setError(null)
@@ -75,11 +79,8 @@ export default function PhotoUploader() {
         if (route) {
           const match = matchPhotoToRoute(meta.lat, meta.lng, meta.takenAt, route)
           if (match) {
-            // If GPS was null, use matched point
-            if (lat === null) {
-              lat = match.lat
-              lng = match.lng
-            }
+            lat = match.lat
+            lng = match.lng
             matchedDistanceM = match.distanceM
           }
         }
@@ -113,7 +114,6 @@ export default function PhotoUploader() {
           .single()
 
         if (dbErr) throw dbErr
-        addPhoto(dbData)
       } catch (e: unknown) {
         console.error(e)
         setError(`Błąd przy ${file.name}: ${e instanceof Error ? e.message : 'nieznany błąd'}`)

@@ -210,16 +210,7 @@ export function matchPhotoToRoute(
 ): { lat: number; lng: number; distanceM: number } | null {
   if (route.points.length === 0) return null
 
-  if (photoLat !== null && photoLng !== null) {
-    let best = route.points[0]
-    let bestDist = Infinity
-    for (const pt of route.points) {
-      const d = haversine({ lat: photoLat, lng: photoLng, ele: null, time: null }, pt)
-      if (d < bestDist) { bestDist = d; best = pt }
-    }
-    return { lat: best.lat, lng: best.lng, distanceM: bestDist }
-  }
-
+  // Preferuj dopasowanie czasowe – jest precyzyjniejsze niż GPS (który może być daleko od trasy)
   if (photoTime) {
     const hasTime = route.points.some((p) => p.time !== null)
     if (hasTime) {
@@ -230,8 +221,21 @@ export function matchPhotoToRoute(
         const diff = Math.abs(pt.time.getTime() - photoTime.getTime())
         if (diff < bestDiff) { bestDiff = diff; best = pt }
       }
-      return { lat: best.lat, lng: best.lng, distanceM: 0 }
+      const distanceM = (photoLat !== null && photoLng !== null)
+        ? haversine({ lat: photoLat, lng: photoLng, ele: null, time: null }, best)
+        : 0
+      return { lat: best.lat, lng: best.lng, distanceM }
     }
+  }
+
+  if (photoLat !== null && photoLng !== null) {
+    let best = route.points[0]
+    let bestDist = Infinity
+    for (const pt of route.points) {
+      const d = haversine({ lat: photoLat, lng: photoLng, ele: null, time: null }, pt)
+      if (d < bestDist) { bestDist = d; best = pt }
+    }
+    return { lat: best.lat, lng: best.lng, distanceM: bestDist }
   }
 
   return null

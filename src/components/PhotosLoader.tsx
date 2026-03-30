@@ -1,15 +1,22 @@
 'use client'
 
 import { useEffect } from 'react'
+import { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase, SUPABASE_CONFIGURED } from '@/lib/supabase'
 import { useStore } from '@/store/useStore'
 
+// Singleton poza Reactem – jeden kanał niezależnie od StrictMode i HMR
+let channel: RealtimeChannel | null = null
+
 export default function PhotosLoader() {
-  const { setPhotos, addPhoto } = useStore()
+  const setPhotos = useStore((s) => s.setPhotos)
+  const addPhoto  = useStore((s) => s.addPhoto)
+  const removePhoto = useStore((s) => s.removePhoto)
 
   useEffect(() => {
     if (!SUPABASE_CONFIGURED) return
 
+    // Pobierz aktualne zdjęcia
     supabase
       .from('photos')
       .select('*')
@@ -18,9 +25,10 @@ export default function PhotosLoader() {
         if (!error && data) setPhotos(data)
       })
 
-    const { removePhoto } = useStore.getState()
+    // Jeśli kanał już istnieje (StrictMode re-mount), nie twórz nowego
+    if (channel) return
 
-    const channel = supabase
+    channel = supabase
       .channel('photos-realtime')
       .on(
         'postgres_changes',
@@ -35,9 +43,12 @@ export default function PhotosLoader() {
       .subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      if (channel) {
+        supabase.removeChannel(channel)
+        channel = null
+      }
     }
-  }, [setPhotos, addPhoto])
+  }, [setPhotos, addPhoto, removePhoto])
 
   return null
 }
