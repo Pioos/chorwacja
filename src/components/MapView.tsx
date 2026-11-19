@@ -160,16 +160,21 @@ export default function MapView() {
         const hasActiveDay = activeDayKey !== null
         const latlngs = day.points.map((p) => [p.lat, p.lng] as [number, number])
 
+        const shadowOpacity = hasActiveDay && !isActive ? 0.08 : 0.30
         const shadow = L.polyline(latlngs, {
           color: '#000',
           weight: isActive ? 10 : 7,
-          opacity: hasActiveDay && !isActive ? 0.08 : 0.30,
+          opacity: shadowOpacity,
         }).addTo(mapInstanceRef.current!)
+
+        let lineOpacity = 0.85
+        if (isActive) lineOpacity = 1
+        else if (hasActiveDay) lineOpacity = 0.35
 
         const line = L.polyline(latlngs, {
           color,
           weight: isActive ? 7 : 5,
-          opacity: isActive ? 1 : hasActiveDay ? 0.35 : 0.85,
+          opacity: lineOpacity,
         }).addTo(mapInstanceRef.current!)
 
         const tooltip = r.participant ? `${r.participant} · ${day.label}` : day.label

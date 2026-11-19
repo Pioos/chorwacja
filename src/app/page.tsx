@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { Mountain, Maximize2, Minimize2 } from 'lucide-react'
+import { Mountain, Maximize2, Minimize2, PanelLeft } from 'lucide-react'
 import TopBar from '@/components/TopBar'
 import LeftPanel from '@/components/LeftPanel'
 import Lightbox from '@/components/Lightbox'
@@ -20,10 +20,16 @@ const MapView = dynamic(() => import('@/components/MapView'), {
   ),
 })
 
+function isTyping(e: KeyboardEvent): boolean {
+  const tag = (e.target as HTMLElement)?.tagName
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
+}
+
 export default function Home() {
   const [showUploader, setShowUploader] = useState(false)
   const [showTimeline, setShowTimeline] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
+  const [showMobilePanel, setShowMobilePanel] = useState(false)
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -32,7 +38,7 @@ export default function Home() {
         setShowUploader(false)
         setShowTimeline(false)
       }
-      if (e.key === 'f' || e.key === 'F') setFullscreen((v) => !v)
+      if ((e.key === 'f' || e.key === 'F') && !isTyping(e)) setFullscreen((v) => !v)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -57,7 +63,6 @@ export default function Home() {
       <div className="flex flex-1 min-h-0">
         <main className="flex-1 relative min-h-0">
           <MapView />
-          {/* Przycisk pełnego ekranu */}
           <button
             onClick={() => setFullscreen((v) => !v)}
             className="absolute bottom-12 right-3 z-[1000] w-9 h-9 flex items-center justify-center bg-gray-900/90 hover:bg-gray-800 border border-gray-700/60 rounded-lg text-gray-300 hover:text-white transition-colors duration-150 cursor-pointer shadow-lg"
@@ -65,9 +70,23 @@ export default function Home() {
           >
             {fullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
           </button>
+          {!fullscreen && (
+            <button
+              onClick={() => setShowMobilePanel((v) => !v)}
+              className="md:hidden absolute bottom-12 left-3 z-[1000] w-9 h-9 flex items-center justify-center bg-gray-900/90 hover:bg-gray-800 border border-gray-700/60 rounded-lg text-gray-300 hover:text-white transition-colors duration-150 cursor-pointer shadow-lg"
+              title="Trasy i dni"
+            >
+              <PanelLeft size={15} />
+            </button>
+          )}
         </main>
         {!fullscreen && (
-          <LeftPanel showUploader={showUploader} showTimeline={showTimeline} />
+          <LeftPanel
+            showUploader={showUploader}
+            showTimeline={showTimeline}
+            showMobile={showMobilePanel}
+            onCloseMobile={() => setShowMobilePanel(false)}
+          />
         )}
       </div>
       <Lightbox />
